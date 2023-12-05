@@ -1,5 +1,6 @@
 package org.quantum.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.quantum.entity.User;
@@ -13,7 +14,11 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private final UserRepository userRepository;
-    
+
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }
