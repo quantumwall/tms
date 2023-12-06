@@ -27,6 +27,10 @@ public class UserService {
 	public Optional<User> findById(Long id) {
 		return userRepository.findById(id);
 	}
+	
+	public boolean userExists(Long userId) {
+	    return userRepository.existsById(userId);
+	}
 
 	@Transactional
 	public User create(CreateUserDto createUserDto) {

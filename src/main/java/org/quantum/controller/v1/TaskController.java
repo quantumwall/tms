@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -22,21 +23,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TaskController {
 
-	private final TaskService taskService;
+    private final TaskService taskService;
 
-	@GetMapping
-	public ResponseEntity<List<Task>> getAll() {
-		return ResponseEntity.status(HttpStatus.OK).body(taskService.findAll());
-	}
+    @GetMapping
+    public ResponseEntity<List<Task>> getAllUserTasks(@RequestParam(required = false) Long userId) {
+	return ResponseEntity.status(HttpStatus.OK).body(taskService.findAllByUserId(userId));
+    }
 
-	@PostMapping
-	public ResponseEntity<Task> create(@RequestBody CreateTaskDto taskDto) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(taskService.createTask(taskDto));
+    @PostMapping
+    public ResponseEntity<Task> create(@RequestBody CreateTaskDto taskDto) {
+	return ResponseEntity.status(HttpStatus.CREATED).body(taskService.createTask(taskDto));
 
-	}
+    }
 
-	@PatchMapping
-	public ResponseEntity<Task> update(@RequestBody UpdateTaskDto taskDto) {
-		return ResponseEntity.status(HttpStatus.OK).body(taskService.update(taskDto));
-	}
+    @PatchMapping
+    public ResponseEntity<Task> update(@RequestBody UpdateTaskDto taskDto) {
+	return ResponseEntity.status(HttpStatus.OK).body(taskService.update(taskDto));
+    }
 }

@@ -11,12 +11,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Data
 @Entity
 @Builder
-@ToString(exclude = { "author", "responsible" })
 @NoArgsConstructor
 @AllArgsConstructor
 public class Task {
@@ -36,10 +34,10 @@ public class Task {
     private User responsible;
 
     public static enum Status {
-        IDLE, IN_PROGRESS, TERMINATED
+	IDLE, IN_PROGRESS, TERMINATED
     }
 
     public static enum Priority {
-        LOW, MIDDLE, HIGH
+	LOW, MIDDLE, HIGH
     }
 }
