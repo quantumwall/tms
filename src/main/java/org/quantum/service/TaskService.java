@@ -1,6 +1,7 @@
 package org.quantum.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.quantum.dto.CreateTaskDto;
 import org.quantum.dto.UpdateTaskDto;
@@ -26,6 +27,11 @@ public class TaskService {
 		return taskRepository.findAll();
 	}
 
+	public Optional<Task> findById(Long id) {
+		return taskRepository.findById(id);
+	}
+
+	@Transactional
 	public Task createTask(CreateTaskDto createTaskDto) {
 		var responsible = userService.findById(createTaskDto.responsibleId())
 				.orElseThrow(() -> new RuntimeException("Responsible not found"));

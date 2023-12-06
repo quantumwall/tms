@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.quantum.dto.CreateUserDto;
-import org.quantum.entity.Task;
 import org.quantum.entity.User;
 import org.quantum.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -19,25 +18,25 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
+	private final UserRepository userRepository;
 
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
+	public List<User> findAll() {
+		return userRepository.findAll();
+	}
 
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
-    }
+	public Optional<User> findById(Long id) {
+		return userRepository.findById(id);
+	}
 
-    @Transactional
-    public User create(CreateUserDto createUserDto) {
-        var user = User.builder().email(createUserDto.email()).name(createUserDto.name()).build();
-        return create(user);
-    }
+	@Transactional
+	public User create(CreateUserDto createUserDto) {
+		var user = User.builder().email(createUserDto.email()).name(createUserDto.name()).build();
+		return create(user);
+	}
 
-    @Transactional
-    public User create(User user) {
-        log.info("user: {}", user);
-        return userRepository.save(user);
-    }
+	@Transactional
+	public User create(User user) {
+		log.info("user: {}", user);
+		return userRepository.save(user);
+	}
 }

@@ -3,3 +3,6 @@ spring:
     username: postgres
     password: postgres
     url: jdbc:postgresql://localhost:5432/tms
+jwt:
+  secret: fBvgt1jt+NIK5xPADxAbMp7C4k5fkSXZMg0lZX8yV4KcSRxqWDS1gglJW575pzcc
+  lifetime: 30m
