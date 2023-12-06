@@ -36,7 +36,7 @@ public class Task {
     private User responsible;
 
     public static enum Status {
-        IDLE, IN_PROGESS, TERMINATED
+        IDLE, IN_PROGRESS, TERMINATED
     }
 
     public static enum Priority {
