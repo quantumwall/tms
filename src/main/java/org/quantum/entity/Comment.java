@@ -23,7 +23,7 @@ public class Comment {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String message;
-	private final LocalDateTime createdAt = LocalDateTime.now();
+	private LocalDateTime createdAt;
 	@ManyToOne
 	private User user;
 	@ManyToOne

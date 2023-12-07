@@ -1,11 +1,13 @@
 package org.quantum.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.quantum.dto.CreateCommentDto;
 import org.quantum.entity.Comment;
 import org.quantum.exception.EntityNotFoundException;
 import org.quantum.repository.CommentRepository;
+import org.quantum.security.SecurityUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +23,12 @@ public class CommentService {
 	private final UserService userService;
 
 	@Transactional
-	public Comment create(CreateCommentDto commentDto) {
+	public Comment create(CreateCommentDto commentDto, SecurityUser securityUser) {
 		var task = taskService.findById(commentDto.taskId()).orElseThrow(
 				() -> new EntityNotFoundException("Task with id %d is not found".formatted(commentDto.taskId())));
-		var user = userService.findById(commentDto.userId()).orElseThrow(
-				() -> new EntityNotFoundException("User with id %d is not found".formatted(commentDto.userId())));
-		var comment = Comment.builder().user(user).task(task).message(commentDto.message()).build();
+		var user = userService.findById(securityUser.getId()).get();
+		var comment = Comment.builder().user(user).task(task).message(commentDto.message())
+				.createdAt(LocalDateTime.now()).build();
 		return create(comment);
 	}
 
