@@ -1,5 +1,6 @@
 package org.quantum.security;
 
+import org.quantum.security.filter.JwtRequestFilter;
 import org.quantum.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +23,7 @@ public class SecurityConfig {
 
 	private final UserService userService;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtRequestFilter jwtFilter;
 
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -30,7 +33,7 @@ public class SecurityConfig {
 			auth.requestMatchers("/api/v1/registration", "/api/v1/authorize").permitAll();
 			auth.anyRequest().authenticated();
 		});
-
+		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
 

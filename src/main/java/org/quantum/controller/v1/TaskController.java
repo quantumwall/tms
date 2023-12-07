@@ -1,15 +1,13 @@
 package org.quantum.controller.v1;
 
-import java.util.List;
+import java.security.Principal;
 
 import org.quantum.dto.CreateTaskDto;
+import org.quantum.dto.ReadTaskDto;
 import org.quantum.dto.UpdateTaskDto;
-import org.quantum.entity.Task;
-import org.quantum.security.SecurityUser;
 import org.quantum.service.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,21 +26,21 @@ public class TaskController {
 	private final TaskService taskService;
 
 	@GetMapping
-	public ResponseEntity<List<Task>> getAllUserTasks(@RequestParam(required = false) Long userId,
-													  @AuthenticationPrincipal SecurityUser securityUser) {
-		return ResponseEntity.status(HttpStatus.OK).body(taskService.findAllByUserId(userId, securityUser));
+	public ResponseEntity<?> getAllUserTasks(@RequestParam(required = false) Long userId, Principal principal) {
+		var tasks = taskService.findAllByUserId(userId, principal).stream().map(ReadTaskDto::from).toList();
+		return ResponseEntity.status(HttpStatus.OK).body(tasks);
 	}
 
 	@PostMapping
-	public ResponseEntity<Task> create(@RequestBody CreateTaskDto taskDto,
-									   @AuthenticationPrincipal SecurityUser securityUser) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(taskService.createTask(taskDto, securityUser));
+	public ResponseEntity<?> create(@RequestBody CreateTaskDto taskDto, Principal principal) {
+		var createdTask = taskService.createTask(taskDto, principal);
+		return ResponseEntity.status(HttpStatus.CREATED).body(ReadTaskDto.from(createdTask));
 
 	}
 
 	@PatchMapping
-	public ResponseEntity<Task> update(@RequestBody UpdateTaskDto taskDto,
-									   @AuthenticationPrincipal SecurityUser securityUser) {
-		return ResponseEntity.status(HttpStatus.OK).body(taskService.update(taskDto, securityUser));
+	public ResponseEntity<?> update(@RequestBody UpdateTaskDto taskDto, Principal principal) {
+		var updatedTask = taskService.update(taskDto, principal);
+		return ResponseEntity.status(HttpStatus.OK).body(ReadTaskDto.from(updatedTask));
 	}
 }

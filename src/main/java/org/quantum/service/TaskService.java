@@ -8,10 +8,10 @@ import java.util.Optional;
 import org.quantum.dto.CreateTaskDto;
 import org.quantum.dto.UpdateTaskDto;
 import org.quantum.entity.Task;
+import org.quantum.entity.User;
 import org.quantum.exception.EntityNotFoundException;
 import org.quantum.exception.InsufficientRightsException;
 import org.quantum.repository.TaskRepository;
-import org.quantum.security.SecurityUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -25,12 +25,12 @@ public class TaskService {
 
 	private final TaskRepository taskRepository;
 	private final UserService userService;
-//	private final Principal principal;
 
-	public List<Task> findAllByUserId(Long userId, SecurityUser securityUser) {
+	public List<Task> findAllByUserId(Long userId, Principal principal) {
 		List<Task> tasks;
 		if (Objects.isNull(userId)) {
-			tasks = taskRepository.findAllByAuthorOrResponsible(securityUser.getId());
+			var user = userService.findByEmail(principal.getName()).get();
+			tasks = taskRepository.findAllByAuthorOrResponsible(user.getId());
 		} else {
 			if (userService.userExists(userId)) {
 				tasks = taskRepository.findAllByAuthorOrResponsible(userId);
@@ -46,29 +46,28 @@ public class TaskService {
 	}
 
 	@Transactional
-	public Task createTask(CreateTaskDto createTaskDto, SecurityUser securityUser) {
-		var authorId = securityUser.getId();
+	public Task createTask(CreateTaskDto createTaskDto, Principal principal) {
+		var author = userService.findByEmail(principal.getName()).get();
 		var responsible = userService.findById(createTaskDto.responsibleId())
 				.orElseThrow(() -> new EntityNotFoundException(
 						"Responsible with id %d is not found".formatted(createTaskDto.responsibleId())));
-		var author = userService.findById(authorId)
-				.orElseThrow(() -> new EntityNotFoundException("User with id %d is not found".formatted(authorId)));
 		var task = Task.builder().name(createTaskDto.name()).description(createTaskDto.description())
 				.status(Task.Status.IDLE).priority(createTaskDto.priority()).author(author).responsible(responsible)
 				.build();
 		return createTask(task);
 	}
 
+	@Transactional
 	public Task createTask(Task task) {
 		return taskRepository.save(task);
 	}
 
 	@Transactional
-	public Task update(UpdateTaskDto taskDto, SecurityUser securityUser) {
-		var authorId = securityUser.getId();
+	public Task update(UpdateTaskDto taskDto, Principal principal) {
+		var user = userService.findByEmail(principal.getName()).get();
 		var task = taskRepository.findById(taskDto.id())
 				.orElseThrow(() -> new EntityNotFoundException("Task %d is not found".formatted(taskDto.id())));
-		if (isAuthor(authorId, task)) {
+		if (isAuthor(user, task)) {
 			mapFrom(taskDto, task);
 			if (taskDto.responsibleId() != null && task.getResponsible().getId() != taskDto.responsibleId()) {
 				var newResponsible = userService.findById(taskDto.responsibleId())
@@ -78,7 +77,7 @@ public class TaskService {
 			}
 			return task;
 		}
-		if (isResponsible(authorId, task)) {
+		if (isResponsible(user, task)) {
 			if (Objects.nonNull(taskDto.status())) {
 				task.setStatus(taskDto.status());
 				return task;
@@ -105,11 +104,11 @@ public class TaskService {
 		}
 	}
 
-	private boolean isAuthor(Long userId, Task task) {
-		return task.getAuthor().getId().equals(userId);
+	private boolean isAuthor(User user, Task task) {
+		return task.getAuthor().getId().equals(user.getId());
 	}
 
-	private boolean isResponsible(Long userId, Task task) {
-		return task.getResponsible().getId().equals(userId);
+	private boolean isResponsible(User user, Task task) {
+		return task.getResponsible().getId().equals(user.getId());
 	}
 }
