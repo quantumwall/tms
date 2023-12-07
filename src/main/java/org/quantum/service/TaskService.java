@@ -45,6 +45,10 @@ public class TaskService {
 		return taskRepository.findById(id);
 	}
 
+	public boolean existsById(Long id) {
+		return taskRepository.existsById(id);
+	}
+
 	@Transactional
 	public Task createTask(CreateTaskDto createTaskDto, Principal principal) {
 		var author = userService.findByEmail(principal.getName()).get();

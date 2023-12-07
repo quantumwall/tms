@@ -1,14 +1,12 @@
 package org.quantum.controller.v1;
 
-import java.util.List;
+import java.security.Principal;
 
 import org.quantum.dto.CreateCommentDto;
-import org.quantum.entity.Comment;
-import org.quantum.security.SecurityUser;
+import org.quantum.dto.ReadCommentDto;
 import org.quantum.service.CommentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,13 +24,14 @@ public class CommentController {
 	private final CommentService commentService;
 
 	@GetMapping
-	public ResponseEntity<List<Comment>> getCommentsByTaskId(@RequestParam Long taskId) {
-		return ResponseEntity.status(HttpStatus.OK).body(commentService.findAllByTaskId(taskId));
+	public ResponseEntity<?> getCommentsByTaskId(@RequestParam Long taskId) {
+		var comments = commentService.findAllByTaskId(taskId).stream().map(ReadCommentDto::from).toList();
+		return ResponseEntity.status(HttpStatus.OK).body(comments);
 	}
 
 	@PostMapping
-	public ResponseEntity<Comment> create(@RequestBody CreateCommentDto commentDto,
-										  @AuthenticationPrincipal SecurityUser securityUser) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(commentService.create(commentDto, securityUser));
+	public ResponseEntity<?> create(@RequestBody CreateCommentDto commentDto, Principal principal) {
+		var createdComment = commentService.create(commentDto, principal);
+		return ResponseEntity.status(HttpStatus.CREATED).body(ReadCommentDto.from(createdComment));
 	}
 }
