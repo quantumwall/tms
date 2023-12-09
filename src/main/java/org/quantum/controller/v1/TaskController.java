@@ -1,6 +1,6 @@
 package org.quantum.controller.v1;
 
-import java.security.Principal;
+import java.util.Map;
 
 import org.quantum.dto.CreateTaskDto;
 import org.quantum.dto.ReadTaskDto;
@@ -26,21 +26,25 @@ public class TaskController {
 	private final TaskService taskService;
 
 	@GetMapping
-	public ResponseEntity<?> getAllUserTasks(@RequestParam(required = false) Long userId, Principal principal) {
-		var tasks = taskService.findAllByUserId(userId, principal).stream().map(ReadTaskDto::from).toList();
-		return ResponseEntity.status(HttpStatus.OK).body(tasks);
+	public ResponseEntity<?> getAllUserTasks(@RequestParam(required = false) Long userId,
+											 @RequestParam(defaultValue = "0") Integer page,
+											 @RequestParam(defaultValue = "3") Integer size) {
+		var tasksPage = taskService.findAllByUserId(userId, page, size);
+		var tasks = tasksPage.getContent().stream().map(ReadTaskDto::from).toList();
+		return ResponseEntity.status(HttpStatus.OK).body(Map.of("tasks", tasks, "currentPage", tasksPage.getNumber(),
+				"totalItems", tasksPage.getTotalElements(), "totalPages", tasksPage.getTotalPages()));
 	}
 
 	@PostMapping
-	public ResponseEntity<?> create(@RequestBody CreateTaskDto taskDto, Principal principal) {
-		var createdTask = taskService.createTask(taskDto, principal);
+	public ResponseEntity<?> create(@RequestBody CreateTaskDto taskDto) {
+		var createdTask = taskService.createTask(taskDto);
 		return ResponseEntity.status(HttpStatus.CREATED).body(ReadTaskDto.from(createdTask));
 
 	}
 
 	@PatchMapping
-	public ResponseEntity<?> update(@RequestBody UpdateTaskDto taskDto, Principal principal) {
-		var updatedTask = taskService.update(taskDto, principal);
+	public ResponseEntity<?> update(@RequestBody UpdateTaskDto taskDto) {
+		var updatedTask = taskService.update(taskDto);
 		return ResponseEntity.status(HttpStatus.OK).body(ReadTaskDto.from(updatedTask));
 	}
 }

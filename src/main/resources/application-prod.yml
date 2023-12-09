@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://tms-postgres:5432/tms
+    password: tms
+    username: tms
+jwt:
+  secret: fBvgt1jt+NIK5xPADxAbMp7C4k5fkSXZMg0lZX8yV4KcSRxqWDS1gglJW575pzcc
+  lifetime: 30m

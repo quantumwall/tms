@@ -9,8 +9,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,10 +31,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 			jwt = header.substring(7);
 			try {
 				email = jwtUtils.getEmail(jwt);
-			} catch (ExpiredJwtException e) {
-
-			} catch (SignatureException e) {
-
+			} catch (Exception e) {
 			}
 		}
 		if (Objects.nonNull(email) && Objects.isNull(SecurityContextHolder.getContext().getAuthentication())) {

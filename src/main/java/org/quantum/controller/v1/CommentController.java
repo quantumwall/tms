@@ -1,7 +1,5 @@
 package org.quantum.controller.v1;
 
-import java.security.Principal;
-
 import org.quantum.dto.CreateCommentDto;
 import org.quantum.dto.ReadCommentDto;
 import org.quantum.service.CommentService;
@@ -30,8 +28,8 @@ public class CommentController {
 	}
 
 	@PostMapping
-	public ResponseEntity<?> create(@RequestBody CreateCommentDto commentDto, Principal principal) {
-		var createdComment = commentService.create(commentDto, principal);
+	public ResponseEntity<?> create(@RequestBody CreateCommentDto commentDto) {
+		var createdComment = commentService.create(commentDto);
 		return ResponseEntity.status(HttpStatus.CREATED).body(ReadCommentDto.from(createdComment));
 	}
 }

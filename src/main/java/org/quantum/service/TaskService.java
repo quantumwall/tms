@@ -1,7 +1,5 @@
 package org.quantum.service;
 
-import java.security.Principal;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -12,6 +10,9 @@ import org.quantum.entity.User;
 import org.quantum.exception.EntityNotFoundException;
 import org.quantum.exception.InsufficientRightsException;
 import org.quantum.repository.TaskRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -26,19 +27,16 @@ public class TaskService {
 	private final TaskRepository taskRepository;
 	private final UserService userService;
 
-	public List<Task> findAllByUserId(Long userId, Principal principal) {
-		List<Task> tasks;
-		if (Objects.isNull(userId)) {
-			var user = userService.findByEmail(principal.getName()).get();
-			tasks = taskRepository.findAllByAuthorOrResponsible(user.getId());
-		} else {
-			if (userService.userExists(userId)) {
-				tasks = taskRepository.findAllByAuthorOrResponsible(userId);
-			} else {
-				throw new EntityNotFoundException("User %d is not found".formatted(userId));
-			}
+	public Page<Task> findAllByUserId(Long userId, Integer page, Integer size) {
+		var pageRequest = PageRequest.of(page, size);
+		var searchUserId = userId;
+		if (Objects.isNull(searchUserId)) {
+			var principal = SecurityContextHolder.getContext().getAuthentication();
+			searchUserId = userService.findByEmail(principal.getName()).get().getId();
+		} else if (!userService.userExists(searchUserId)) {
+			throw new EntityNotFoundException("User %d is not found".formatted(userId));
 		}
-		return tasks;
+		return taskRepository.findAllByAuthorOrResponsible(searchUserId, pageRequest);
 	}
 
 	public Optional<Task> findById(Long id) {
@@ -50,7 +48,8 @@ public class TaskService {
 	}
 
 	@Transactional
-	public Task createTask(CreateTaskDto createTaskDto, Principal principal) {
+	public Task createTask(CreateTaskDto createTaskDto) {
+		var principal = SecurityContextHolder.getContext().getAuthentication();
 		var author = userService.findByEmail(principal.getName()).get();
 		var responsible = userService.findById(createTaskDto.responsibleId())
 				.orElseThrow(() -> new EntityNotFoundException(
@@ -67,13 +66,14 @@ public class TaskService {
 	}
 
 	@Transactional
-	public Task update(UpdateTaskDto taskDto, Principal principal) {
+	public Task update(UpdateTaskDto taskDto) {
+		var principal = SecurityContextHolder.getContext().getAuthentication();
 		var user = userService.findByEmail(principal.getName()).get();
 		var task = taskRepository.findById(taskDto.id())
 				.orElseThrow(() -> new EntityNotFoundException("Task %d is not found".formatted(taskDto.id())));
 		if (isAuthor(user, task)) {
 			mapFrom(taskDto, task);
-			if (taskDto.responsibleId() != null && task.getResponsible().getId() != taskDto.responsibleId()) {
+			if (Objects.nonNull(taskDto.responsibleId()) && task.getResponsible().getId() != taskDto.responsibleId()) {
 				var newResponsible = userService.findById(taskDto.responsibleId())
 						.orElseThrow(() -> new EntityNotFoundException(
 								"Responsible with id %d is not found".formatted(taskDto.responsibleId())));
